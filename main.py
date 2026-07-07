@@ -1,12 +1,64 @@
+from pydantic import BaseModel, AnyHttpUrl
+import secrets
+import mysql.connector
 from fastapi import FastAPI
+from fastapi.responses import RedirectResponse
 
 api = FastAPI()
 
+class links(BaseModel):
+    originalLink: AnyHttpUrl
+
 @api.get("/")
-def index():
-    return {"message": "Hello, World!"}
+def root():
+    return {"message": "Hello World"}
 
 
-@api.get("/calculations/{a}")
-def calc(a: int):
-    return {"result": a * 2}
+@api.post("/")
+def gen_link(org_link: links):
+    try:
+        mydb = mysql.connector.connect(
+        host="localhost",
+        user="manu",
+        password="Manu@102102",
+        database="test")
+        link_id = secrets.token_hex(8)
+        cursor = mydb.cursor()
+        cursor.execute("INSERT INTO users (id, originalLink) VALUES (%s, %s)", (link_id, str(org_link.originalLink)))
+        mydb.commit()
+
+        cursor.close()
+        mydb.close()
+    except mysql.connector.Error as err:
+        return {"Database Error" : err}
+
+    finally:
+        cursor.close()
+        mydb.close()
+
+    return {"Generated Short Link": link_id}
+
+@api.get("/{retrieve_link}")
+def redirect(retrieve_link: str):
+    try:
+        mydb = mysql.connector.connect(
+        host="localhost",
+        user="manu",
+        password="Manu@102102",
+        database="test")
+
+        cursor = mydb.cursor()
+        cursor.execute("SELECT originalLink FROM users WHERE (id = %s)", (retrieve_link, ))
+        link = cursor.fetchone()
+
+        cursor.close()
+        mydb.close()
+
+    except mysql.connector.Error as err:
+        return {"Database Error" : err}
+
+    if link is None:
+            return {"error" : "Invalid Link"}
+
+
+    return RedirectResponse(url=link[0])
