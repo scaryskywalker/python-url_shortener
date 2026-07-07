@@ -18,10 +18,10 @@ def root():
 def gen_link(org_link: links):
     try:
         mydb = mysql.connector.connect(
-        host="localhost",
-        user="manu",
-        password="Manu@102102",
-        database="test")
+        host="sql.freedb.tech",
+        user="u_pmK7Fi",
+        password="2B02yfeSPLWn",
+        database="freedb_F5jF3SOu")
         link_id = secrets.token_hex(8)
         cursor = mydb.cursor()
         cursor.execute("INSERT INTO users (id, originalLink) VALUES (%s, %s)", (link_id, str(org_link.originalLink)))
@@ -42,10 +42,10 @@ def gen_link(org_link: links):
 def redirect(retrieve_link: str):
     try:
         mydb = mysql.connector.connect(
-        host="localhost",
-        user="manu",
-        password="Manu@102102",
-        database="test")
+        host="sql.freedb.tech",
+        user="u_pmK7Fi",
+        password="2B02yfeSPLWn",
+        database="freedb_F5jF3SOu")
 
         cursor = mydb.cursor()
         cursor.execute("SELECT originalLink FROM users WHERE (id = %s)", (retrieve_link, ))
