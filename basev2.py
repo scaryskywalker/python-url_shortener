@@ -4,7 +4,6 @@ import mysql.connector
 from fastapi import FastAPI, Request, Form
 from fastapi.responses import RedirectResponse, HTMLResponse
 from fastapi.templating import Jinja2Templates
-from starlette.middleware.trustedhost import TrustedHostMiddleware
 
 api = FastAPI()
 
@@ -28,7 +27,6 @@ async def root(request: Request):
 
 @api.post("/genlink")
 def gen_link(request: Request,original: str = Form(...)):
-
     try:
         org_link = Links(originalLink = original)
         mydb = mysql.connector.connect(
