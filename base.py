@@ -6,7 +6,6 @@ from fastapi.responses import RedirectResponse
 
 api = FastAPI()
 
-print("hello")
 
 class links(BaseModel):
     originalLink: AnyHttpUrl
