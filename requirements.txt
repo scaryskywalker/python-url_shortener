@@ -1,2 +1,2 @@
-"fastapi[standard]"
+fastapi[standard]
 mysql-connector-python
