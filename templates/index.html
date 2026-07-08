@@ -3,34 +3,100 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ShortLink Studio</title>
+    <title>URL Shortener</title>
     <link rel="stylesheet" href="/static/index.css">
 </head>
 <body>
-    <div class="page-shell">
-        <section class="hero-card">
-            <div class="hero-text">
-                <p class="eyebrow">Fast • Clean • Reliable</p>
-                <h1>Turn long links into short, shareable ones.</h1>
-                <p class="subtitle">Paste your URL, generate a compact short link, and share it instantly.</p>
-            </div>
+    <div class="container">
+        <header class="header">
+            <h1>URL Shortener</h1>
+            <p class="subtitle">Make your links shorter and shareable</p>
+        </header>
 
-            <form class="shortener-form" action="/genlink" method="post">
-                <label for="original">Your long URL</label>
-                <div class="input-row">
-                    <input id="original" type="url" name="original" placeholder="https://example.com/very/long/url" required>
-                    <button type="submit">Generate</button>
+        <main class="main-content">
+            <form id="urlForm" action="/genlink" method="post" class="form-container">
+                <div class="form-group">
+                    <label for="original" class="form-label">Enter your URL</label>
+                    <div class="input-wrapper">
+                        <input 
+                            type="text" 
+                            id="original"
+                            name="original" 
+                            class="url-input"
+                            placeholder="https://example.com/very/long/url"
+                            required
+                        >
+                        <button type="submit" class="btn-submit">Shorten</button>
+                    </div>
+                    <p class="url-hint">💡 URL should start with <strong>http://</strong> or <strong>https://</strong></p>
                 </div>
-                <p class="hint">Tip: include http:// or https:// for the best results.</p>
+
+                <div class="encoding-options">
+                    <p class="options-title">Encoding Type (Optional)</p>
+                    <div class="checkbox-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="use_base62" value="1">
+                            <span class="checkbox-text">Base62 Encoding</span>
+                            <span class="checkbox-desc">Shorter URLs (alphanumeric)</span>
+                        </label>
+
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="use_hash" value="1">
+                            <span class="checkbox-text">Hash Encoding</span>
+                            <span class="checkbox-desc">Longer but unique (hex)</span>
+                        </label>
+                    </div>
+                </div>
             </form>
 
             {% if short_link %}
-            <div class="result-box">
-                <p class="result-label">Your short link</p>
-                <a href="{{ short_link }}" target="_blank" rel="noopener noreferrer">{{ short_link }}</a>
+            <div class="result-container">
+                <h2>Your shortened URL</h2>
+                <div class="result-box">
+                    <input type="text" class="result-url" value="{{ short_link }}" readonly>
+                    <button class="btn-copy" onclick="copyToClipboard()">Copy Link</button>
+                </div>
+                <p class="result-hint">Your link is ready to share!</p>
+                <button class="btn-new" onclick="location.reload()">Shorten Another</button>
             </div>
             {% endif %}
-        </section>
+        </main>
+
+        <footer class="footer">
+            <p>&copy; 2024 URL Shortener. Made simple.</p>
+        </footer>
     </div>
+
+    <script>
+        function copyToClipboard() {
+            const urlInput = document.querySelector('.result-url');
+            urlInput.select();
+            document.execCommand('copy');
+            
+            const btn = event.target;
+            const originalText = btn.textContent;
+            btn.textContent = 'Copied!';
+            btn.classList.add('copied');
+            
+            setTimeout(() => {
+                btn.textContent = originalText;
+                btn.classList.remove('copied');
+            }, 2000);
+        }
+
+        // Prevent both checkboxes from being selected at the same time
+        const base62Checkbox = document.querySelector('input[name="use_base62"]');
+        const hashCheckbox = document.querySelector('input[name="use_hash"]');
+
+        if (base62Checkbox && hashCheckbox) {
+            base62Checkbox.addEventListener('change', function() {
+                if (this.checked) hashCheckbox.checked = false;
+            });
+
+            hashCheckbox.addEventListener('change', function() {
+                if (this.checked) base62Checkbox.checked = false;
+            });
+        }
+    </script>
 </body>
 </html>

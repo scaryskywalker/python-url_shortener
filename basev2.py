@@ -5,6 +5,8 @@ from fastapi import FastAPI, Request, Form
 from fastapi.responses import RedirectResponse, HTMLResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
+import base62
+import hashlib
 
 api = FastAPI()
 api.mount("/static", StaticFiles(directory="static"), name="static")
@@ -28,7 +30,8 @@ async def root(request: Request):
 
 
 @api.post("/genlink")
-def gen_link(request: Request,original: str = Form(...)):
+def gen_link(request: Request,original: str = Form(...), use_base62: bool = Form(False), use_hash: bool = Form(False)):
+    cursor = None
     try:
         org_link = Links(originalLink = original)
         mydb = mysql.connector.connect(
@@ -36,9 +39,21 @@ def gen_link(request: Request,original: str = Form(...)):
         user="u_pmK7Fi",
         password="2B02yfeSPLWn",
         database="freedb_F5jF3SOu")
-        link_id = secrets.token_hex(8)
+
+        if use_base62 == True:
+            link_id = base62.encode(int(secrets.token_hex(8), 16))
+            short_url = str(request.base_url) + link_id
+            encoding = "base62"
+        elif use_hash == True:
+            link_id = hashlib.sha256(secrets.token_bytes(8)).hexdigest()
+            short_url = str(request.base_url) + link_id
+            encoding = "hash"
+        else:
+            link_id = secrets.token_hex(8)
+            short_url = str(request.base_url) + link_id
+            encoding = "hex"
         cursor = mydb.cursor()
-        cursor.execute("INSERT INTO users (id, originalLink) VALUES (%s, %s)", (link_id, str(org_link.originalLink)))
+        cursor.execute("INSERT INTO users (id, originalLink, encoding) VALUES (%s, %s, %s)", (link_id, str(org_link.originalLink), encoding))
         mydb.commit()
     except mysql.connector.Error as err:
         return {"Database Error" : err}
@@ -47,10 +62,10 @@ def gen_link(request: Request,original: str = Form(...)):
         return {"message" : "validation error"}
 
     finally:
-        cursor.close()
-        mydb.close()
+        if cursor is not None:
+            cursor.close()
+            mydb.close()
 
-    short_url = str(request.base_url) + link_id
 
     return templates.TemplateResponse(request=request, name="index.html", context={"short_link": short_url})
 
@@ -64,6 +79,8 @@ def redirect(retrieve_link: str):
         user="u_pmK7Fi",
         password="2B02yfeSPLWn",
         database="freedb_F5jF3SOu")
+
+
 
         cursor = mydb.cursor()
         cursor.execute("SELECT originalLink FROM users WHERE (id = %s)", (retrieve_link, ))
