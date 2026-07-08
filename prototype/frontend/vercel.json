@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/:short_code",
+      "destination": "https://shortner-n5d5.onrender.com/:short_code"
+    }
+  ]
+}
