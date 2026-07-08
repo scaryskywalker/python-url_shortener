@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Merchant URL Shortener Console</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <header class="topbar">
+        <div>
+          <h1>URL Shortener Console</h1>
+          <p>Health, merchant setup, configuration, shortening, validation, and redirect checks.</p>
+        </div>
+        <button id="healthButton" class="button primary" type="button">Check Health</button>
+      </header>
+
+      <section class="status-strip" aria-live="polite">
+        <div>
+          <span class="label">API</span>
+          <strong id="apiStatus">Not checked</strong>
+        </div>
+        <div>
+          <span class="label">MySQL</span>
+          <strong id="mysqlStatus">Not checked</strong>
+        </div>
+        <div>
+          <span class="label">Redis</span>
+          <strong id="redisStatus">Not checked</strong>
+        </div>
+      </section>
+
+      <section class="grid">
+        <form id="merchantForm" class="panel">
+          <h2>Create Merchant</h2>
+          <label>
+            Merchant code
+            <input name="merchant_code" value="PROTECHY01" required />
+          </label>
+          <label>
+            Name
+            <input name="name" value="Protechy" required />
+          </label>
+          <label>
+            Account details
+            <textarea name="account_details" rows="3">Demo merchant account</textarea>
+          </label>
+          <button class="button" type="submit">Create Merchant</button>
+          <div class="result">
+            <span class="label">API key</span>
+            <textarea id="apiKey" rows="3" placeholder="Returned once after merchant creation"></textarea>
+          </div>
+        </form>
+
+        <form id="strategyForm" class="panel">
+          <h2>Strategies</h2>
+          <label>
+            Name
+            <input name="name" value="BASE62_8" required />
+          </label>
+          <label>
+            Output length
+            <input name="output_length" type="number" min="1" max="255" value="8" required />
+          </label>
+          <label>
+            Description
+            <textarea name="description" rows="3">Base62 short code with 8 characters</textarea>
+          </label>
+          <div class="button-row">
+            <button class="button" type="submit">Create Strategy</button>
+            <button id="loadStrategiesButton" class="button secondary" type="button">Load Strategies</button>
+          </div>
+          <select id="strategySelect" size="5" aria-label="Strategies"></select>
+        </form>
+
+        <form id="configForm" class="panel">
+          <h2>Create Config</h2>
+          <label>
+            Strategy ID
+            <input id="strategyId" name="strategy_id" placeholder="Select a strategy or paste UUID" required />
+          </label>
+          <label>
+            Valid until
+            <input id="validUntil" name="valid_until" type="datetime-local" required />
+          </label>
+          <label class="check">
+            <input name="is_active" type="checkbox" checked />
+            Active
+          </label>
+          <button class="button" type="submit">Create Config</button>
+          <select id="configSelect" size="5" aria-label="Merchant configs"></select>
+        </form>
+
+        <form id="shortenForm" class="panel">
+          <h2>Shorten URL</h2>
+          <label>
+            Original URL
+            <input name="original_url" type="url" value="https://protechy.in" required />
+          </label>
+          <label>
+            Config ID
+            <input id="configId" name="config_id" placeholder="Select a config or paste UUID" required />
+          </label>
+          <button class="button" type="submit">Generate Short URL</button>
+          <div class="result">
+            <span class="label">Short URL</span>
+            <a id="shortUrl" href="#" target="_blank" rel="noreferrer">No short URL yet</a>
+          </div>
+          <div class="button-row">
+            <button id="validateButton" class="button secondary" type="button">Validate</button>
+            <button id="openShortButton" class="button secondary" type="button">Open Redirect</button>
+          </div>
+        </form>
+      </section>
+
+      <section class="panel output-panel">
+        <h2>Response</h2>
+        <pre id="output">{}</pre>
+      </section>
+    </main>
+    <script src="/static/app.js"></script>
+  </body>
+</html>
