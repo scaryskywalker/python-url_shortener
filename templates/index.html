@@ -3,16 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>ShortLink Studio</title>
+    <link rel="stylesheet" href="/static/index.css">
 </head>
 <body>
-    <div>
-        <form action="/genlink" method="post">
-            <input type="text" name="original">
-            <button type="submit">Generate</button>
-        </form>
+    <div class="page-shell">
+        <section class="hero-card">
+            <div class="hero-text">
+                <p class="eyebrow">Fast • Clean • Reliable</p>
+                <h1>Turn long links into short, shareable ones.</h1>
+                <p class="subtitle">Paste your URL, generate a compact short link, and share it instantly.</p>
+            </div>
 
-        <p>{{short_link}}</p>
+            <form class="shortener-form" action="/genlink" method="post">
+                <label for="original">Your long URL</label>
+                <div class="input-row">
+                    <input id="original" type="url" name="original" placeholder="https://example.com/very/long/url" required>
+                    <button type="submit">Generate</button>
+                </div>
+                <p class="hint">Tip: include http:// or https:// for the best results.</p>
+            </form>
+
+            {% if short_link %}
+            <div class="result-box">
+                <p class="result-label">Your short link</p>
+                <a href="{{ short_link }}" target="_blank" rel="noopener noreferrer">{{ short_link }}</a>
+            </div>
+            {% endif %}
+        </section>
     </div>
 </body>
 </html>

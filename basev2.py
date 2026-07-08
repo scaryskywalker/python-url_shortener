@@ -4,8 +4,10 @@ import mysql.connector
 from fastapi import FastAPI, Request, Form
 from fastapi.responses import RedirectResponse, HTMLResponse
 from fastapi.templating import Jinja2Templates
+from fastapi.staticfiles import StaticFiles
 
 api = FastAPI()
+api.mount("/static", StaticFiles(directory="static"), name="static")
 
 
 class Links(BaseModel):
