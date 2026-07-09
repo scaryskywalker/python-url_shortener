@@ -7,12 +7,11 @@ from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 import base62
 import hashlib
-from collections.abc import Hashable
 from hash_verification import is_sha256
 
 api = FastAPI()
 api.mount("/static", StaticFiles(directory="static"), name="static")
-prefix = "~"
+suffix = "~"
 
 class Links(BaseModel):
     originalLink: AnyHttpUrl
@@ -37,14 +36,14 @@ def gen_link(request: Request,original: str = Form(...), use_base62: bool = Form
     try:
         org_link = Links(originalLink = original)
         mydb = mysql.connector.connect(
-        host="sql.freedb.tech",
-        user="u_pmK7Fi",
-        password="2B02yfeSPLWn",
-        database="freedb_F5jF3SOu")
+        host="gateway01.ap-southeast-1.prod.aws.tidbcloud.com",
+        user="3vMCMeyHyb8v8vs.root",
+        password="99Y9B9VKR3i339kD",
+        database="url_shortener")
         
         if use_base62 == True:
             link_id = secrets.token_hex(8)
-            encrypted_id = prefix + base62.encode(int(link_id, 16))
+            encrypted_id = base62.encode(int(link_id, 16)) + suffix
             short_url = str(request.base_url) + encrypted_id
             print(link_id)
             encoding = "base62"
@@ -82,17 +81,26 @@ def gen_link(request: Request,original: str = Form(...), use_base62: bool = Form
 def redirect(retrieve_link: str):
     try:
         mydb = mysql.connector.connect(
-        host="sql.freedb.tech",
-        user="u_pmK7Fi",
-        password="2B02yfeSPLWn",
-        database="freedb_F5jF3SOu")
+        host="gateway01.ap-southeast-1.prod.aws.tidbcloud.com",
+        user="3vMCMeyHyb8v8vs.root",
+        password="99Y9B9VKR3i339kD",
+        database="url_shortener")
 
         cursor = mydb.cursor()
 
-        if retrieve_link.startswith(prefix):
-            retrieve_link = base62.decode(retrieve_link[len(prefix):])
-            retrieve_link = hex(retrieve_link)[2:]
-            print(retrieve_link)
+        if retrieve_link.endswith(suffix):
+            encoded_part = retrieve_link[:-len(suffix)]
+            
+            base_cursor = mydb.cursor()
+            base_cursor.execute("SELECT id FROM users WHERE (encoding = %s)", ("base62", ))
+
+            baseLinks = [row[0] for row in base_cursor.fetchall()]
+            for i in baseLinks:
+                j = base62.encode(int(i, 16))
+                if j == encoded_part:
+                    retrieve_link = i
+                else: continue
+            
 
         elif is_sha256(retrieve_link):
             hash_cursor = mydb.cursor()
@@ -105,6 +113,8 @@ def redirect(retrieve_link: str):
                     retrieve_link = i
                 else:
                     continue
+
+            hash_cursor.close()
         else:
             retrieve_link = retrieve_link
 
