@@ -105,13 +105,6 @@ def redirect(retrieve_link: str):
                     retrieve_link = i
                 else:
                     continue
-
-
-
-        
-
-        elif isinstance(retrieve_link, Hashable):
-            retrieve_link = retrieve_link.hashdigest()
         else:
             retrieve_link = retrieve_link
 
